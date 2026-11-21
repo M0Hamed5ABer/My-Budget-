@@ -86,6 +86,41 @@ canvas{width:100%;height:100%}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:760px){.sections{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.app{padding:18px 13px 35px}.budget-card{align-items:flex-start}.budget-meta{font-size:11px}}
 @media(max-width:420px){header{align-items:flex-start}.subtitle{max-width:190px}.budget-card{padding:16px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.summary-card strong{font-size:16px}.item{gap:6px}.item-price{font-size:12px}.item-actions{gap:3px}}
+
+.nav-tabs{display:flex;gap:8px;margin:0 0 18px;padding:5px;background:var(--surface2);border-radius:14px;width:max-content;max-width:100%}
+.nav-tab{border:0;background:transparent;color:var(--muted);padding:10px 18px;border-radius:10px;font-size:14px}
+.nav-tab.active{background:var(--surface);color:var(--text);font-weight:bold;box-shadow:var(--shadow)}
+.item-check{width:29px;height:29px;flex:0 0 29px;border:1.5px solid var(--line);border-radius:9px;background:var(--surface2);color:#fff;font-size:17px;display:grid;place-items:center;padding:0}
+.item-check.paid{background:#398653;border-color:#398653;color:white}
+.item.is-paid .item-name{text-decoration:line-through;color:var(--muted)}
+.section-finance{font-size:11px;color:var(--muted);margin-top:5px;display:flex;gap:10px;flex-wrap:wrap}
+.section-finance b{color:var(--green);font-weight:600}
+.history-page{display:none}
+.history-page.active{display:block}
+.main-page.hidden{display:none}
+.history-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.history-toolbar h2{font-size:18px;margin:0}
+.history-toolbar select,.history-toolbar input{border:1px solid var(--line);background:var(--surface2);color:var(--text);padding:10px;border-radius:10px}
+.history-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+.history-stat{background:var(--surface2);border-radius:13px;padding:14px}
+.history-stat span{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
+.history-stat strong{font-size:19px}
+.history-section-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+.history-section-row:last-child{border-bottom:0}
+.history-category{border:1px solid var(--line);border-radius:12px;padding:0 12px;margin:9px 0;overflow:hidden}
+.history-category-head{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:12px 0;user-select:none}
+.history-category-head strong{font-size:14px}
+.history-category-body{display:none;padding-bottom:8px}
+.history-category.open .history-category-body{display:block}
+.history-category-chevron{color:var(--muted);transition:transform .2s}
+.history-category.open .history-category-chevron{transform:rotate(180deg)}
+.history-section-row small{display:block;color:var(--muted);margin-top:5px}
+.history-chart-wrap{height:280px;position:relative;margin-top:12px}
+.history-empty{text-align:center;padding:35px 10px;color:var(--muted);font-size:13px}
+.settings-note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px}
+@media(max-width:560px){.history-stats{grid-template-columns:1fr}.history-stat{padding:11px}.nav-tab{padding:9px 14px}}
+
 </style>
 </head>
 <body>
@@ -95,6 +130,11 @@ canvas{width:100%;height:100%}
     <div class="header-actions"><button class="icon-btn" id="themeBtn" title="تغيير المظهر">☾</button></div>
   </header>
 
+  <nav class="nav-tabs" aria-label="التنقل بين الصفحات">
+    <button class="nav-tab active" data-page="mainPage">الميزانية</button>
+    <button class="nav-tab" data-page="historyPage">التاريخ</button>
+  </nav>
+  <div class="main-page" id="mainPage">
   <section class="budget-card">
     <div style="flex:1;min-width:0">
       <div class="budget-label">الميزانية الشهرية <span style="color:var(--accent)">✎ اضغط للتعديل</span></div>
@@ -114,6 +154,31 @@ canvas{width:100%;height:100%}
       <select id="chartSection" style="display:none"><option value="commitments">الالتزامات</option><option value="entertainment">الترفيه</option><option value="investment">الاستثمار</option></select>
     </div></div>
     <div class="chart-wrap"><canvas id="chart"></canvas></div><div class="legend" id="legend"></div>
+  </section>
+  </div>
+  <section class="history-page" id="historyPage">
+    <div class="history-panel">
+      <div class="history-toolbar">
+        <div><h2>سجل المصروفات الشهرية</h2><div class="settings-note">يتم حفظ ملخص كل شهر تلقائياً عند بداية دورة الميزانية التالية.</div></div>
+        <div class="field" style="min-width:160px"><label for="historyMonth">اختر الشهر</label><select id="historyMonth"></select></div>
+      </div>
+    </div>
+    <div class="history-panel">
+      <div class="history-toolbar">
+        <div><h2>بداية الشهر المالي</h2><div class="settings-note">حدد اليوم الذي تستلم فيه مصروفك؛ ستبدأ دورة الميزانية من هذا اليوم كل شهر.</div></div>
+        <div style="display:flex;align-items:center;gap:8px"><input id="monthStartDay" type="number" min="1" max="31" value="1" style="width:78px"><button class="primary" id="saveMonthStart">حفظ</button></div>
+      </div>
+    </div>
+    <div class="history-panel">
+      <h2 style="font-size:17px;margin:0 0 12px">ملخص الشهر</h2>
+      <div class="history-stats" id="historyStats"></div>
+      <div id="historySections"></div>
+    </div>
+    <div class="history-panel">
+      <div class="history-toolbar"><h2>التحليل البياني التفصيلي</h2></div>
+      <div class="history-chart-wrap"><canvas id="historyChart"></canvas></div>
+      <div class="legend" id="historyLegend"></div>
+    </div>
   </section>
 </div>
 
@@ -140,11 +205,37 @@ const definitions=[
  {id:'other',title:'مصاريف أخرى',icon:'🧾',fields:['name','description','cost']}
 ];
 const colors=['#a87950','#66836d','#c28e73','#8b829d','#c0a35e','#6f9b9b','#b87583','#8d9b70'];
-let state=loadState(), pendingAction=null, editingId=null;
+let state=loadState(), pendingAction=null, editingId=null, selectedHistoryKey='current';
 const $=id=>document.getElementById(id);
-function defaultState(){return {budget:0,theme:'light',items:[],expandedSections:[]};}
-function loadState(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')};}catch{return defaultState();}}
+function defaultState(){return {budget:0,theme:'light',items:[],expandedSections:[],openHistorySections:[],activePage:'mainPage',history:[],monthStartDay:1,currentPeriodKey:null};}
+function loadState(){try{const loaded={...defaultState(),...JSON.parse(localStorage.getItem(KEY)||'{}')};loaded.items=Array.isArray(loaded.items)?loaded.items:[];loaded.history=Array.isArray(loaded.history)?loaded.history:[];loaded.expandedSections=Array.isArray(loaded.expandedSections)?loaded.expandedSections:[];loaded.openHistorySections=Array.isArray(loaded.openHistorySections)?loaded.openHistorySections:[];if(!['mainPage','historyPage'].includes(loaded.activePage))loaded.activePage='mainPage';loaded.monthStartDay=Math.min(31,Math.max(1,Number(loaded.monthStartDay)||1));loaded.items.forEach(x=>{if(typeof x.paid!=='boolean')x.paid=false;});return loaded;}catch{return defaultState();}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function periodInfo(date=new Date(),startDay=state.monthStartDay){
+ const y=date.getFullYear(),m=date.getMonth(),day=date.getDate();
+ const boundary=Math.min(startDay,new Date(y,m+1,0).getDate());
+ const base=day>=boundary?new Date(y,m,1):new Date(y,m-1,1);
+ const key=base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0');
+ return {key,label:new Intl.DateTimeFormat('ar-EG',{month:'long',year:'numeric'}).format(base)};
+}
+function snapshotCurrent(key){
+ const baseDate=new Date(Number(key.slice(0,4)),Number(key.slice(5,7))-1,1);
+ const info={key,label:new Intl.DateTimeFormat('ar-EG',{month:'long',year:'numeric'}).format(baseDate)};
+ const items=state.items.map(x=>({...x}));
+ const totals=Object.fromEntries(definitions.map(d=>[d.id,items.filter(x=>x.section===d.id).reduce((a,x)=>a+(Number(x.total)||0),0)]));
+ const paid=items.filter(x=>x.paid).reduce((a,x)=>a+(Number(x.total)||0),0);
+ return {key,label:info.label,budget:state.budget,items,totals,paid,spent:items.reduce((a,x)=>a+(Number(x.total)||0),0),savedAt:new Date().toISOString()};
+}
+function ensureCurrentPeriod(){
+ const current=periodInfo().key;
+ if(!state.currentPeriodKey){state.currentPeriodKey=current;save();return;}
+ if(state.currentPeriodKey!==current){
+   if(!state.history.some(x=>x.key===state.currentPeriodKey))state.history.push(snapshotCurrent(state.currentPeriodKey));
+   state.items=state.items.filter(x=>x.section!=='other');
+   state.items.forEach(x=>{x.paid=false;delete x.paidAt;});
+   state.currentPeriodKey=current;
+   save();
+ }
+}
 function money(n){return (Number(n)||0).toLocaleString('en-US',{maximumFractionDigits:2})+' جنيه';}
 function num(v){return Math.max(0,Number(v)||0);}
 function sectionItems(id){return state.items.filter(x=>x.section===id);}
@@ -180,8 +271,8 @@ function formMarkup(d){
 function renderSections(){
  $('sections').innerHTML=definitions.map(d=>{
   const items=sectionItems(d.id);
-  return '<section class="section '+(state.expandedSections.includes(d.id)?'':'collapsed')+'" data-section="'+d.id+'"><div class="section-head" data-collapse="'+d.id+'"><div class="section-title"><div class="section-icon">'+d.icon+'</div><div><h2>'+d.title+'</h2><div class="section-total">'+money(total(d.id))+'</div></div></div><div style="display:flex;align-items:center;gap:10px"><button class="add-btn" data-add="'+d.id+'">＋ إضافة</button><span class="section-chevron">⌄</span></div></div><div class="section-body">'+
-  formMarkup(d)+'<div class="items">'+(items.length?items.map(x=>'<div class="item"><div class="item-main"><div class="item-name">'+esc(x.name)+'</div><div class="item-details">'+(x.category?'<span>'+esc(x.category)+'</span>':'')+(x.quantity!==''&&x.quantity!=null?'<span>الكمية: '+esc(x.quantity)+' / شهر</span>':'')+(x.description?'<span>'+esc(x.description)+'</span>':'')+'</div></div><div class="item-price">'+money(x.total)+'</div><div class="item-actions"><button class="small-btn" title="تعديل" data-edit="'+x.id+'">✎</button><button class="small-btn delete" title="حذف" data-delete="'+x.id+'">×</button></div></div>').join(''):'<div class="empty">لا توجد عناصر حتى الآن. اضغط «إضافة» للبدء.</div>')+'</div></div></section>';
+  return '<section class="section '+(state.expandedSections.includes(d.id)?'':'collapsed')+'" data-section="'+d.id+'"><div class="section-head" data-collapse="'+d.id+'"><div class="section-title"><div class="section-icon">'+d.icon+'</div><div><h2>'+d.title+'</h2><div class="section-total">إجمالي التكلفة: '+money(total(d.id))+'</div><div class="section-finance"><span>المدفوع: <b>'+money(sectionItems(d.id).filter(x=>x.paid).reduce((a,x)=>a+x.total,0))+'</b></span><span>المتبقي: <b>'+money(sectionItems(d.id).filter(x=>!x.paid).reduce((a,x)=>a+x.total,0))+'</b></span></div></div></div><div style="display:flex;align-items:center;gap:10px"><button class="add-btn" data-add="'+d.id+'">＋ إضافة</button><span class="section-chevron">⌄</span></div></div><div class="section-body">'+
+  formMarkup(d)+'<div class="items">'+(items.length?items.map(x=>'<div class="item '+(x.paid?'is-paid':'')+'"><button class="item-check '+(x.paid?'paid':'')+'" data-payment="'+x.id+'" title="'+(x.paid?'إلغاء تسجيل الدفع':'تسجيل الدفع')+'">'+(x.paid?'✓':'')+'</button><div class="item-main"><div class="item-name">'+esc(x.name)+'</div><div class="item-details">'+(x.category?'<span>'+esc(x.category)+'</span>':'')+(x.quantity!==''&&x.quantity!=null?'<span>الكمية: '+esc(x.quantity)+' / شهر</span>':'')+(x.description?'<span>'+esc(x.description)+'</span>':'')+'</div></div><div class="item-price">'+money(x.total)+'</div><div class="item-actions"><button class="small-btn" title="تعديل" data-edit="'+x.id+'">✎</button><button class="small-btn delete" title="حذف" data-delete="'+x.id+'">×</button></div></div>').join(''):'<div class="empty">لا توجد عناصر حتى الآن. اضغط «إضافة» للبدء.</div>')+'</div></div></section>';
  }).join('');
 }
 function renderSummary(){
@@ -191,7 +282,9 @@ function renderSummary(){
  $('remainingDisplay').textContent=(remaining>=0?'المتبقي: ':'تجاوزت الميزانية بـ ')+money(Math.abs(remaining));
  $('budgetProgress').style.width=(state.budget?Math.min(100,spent/state.budget*100):0)+'%';
  $('budgetProgress').style.background=remaining<0?'var(--red)':'var(--green)';
- $('summary').innerHTML=definitions.map(d=>'<div class="summary-card"><span>'+d.icon+' '+d.title+'</span><strong>'+money(total(d.id))+'</strong><small>'+(state.budget?(total(d.id)/state.budget*100).toFixed(1):'0.0')+'% من الميزانية</small></div>').join('');
+ const paid=state.items.filter(x=>x.paid).reduce((a,x)=>a+x.total,0),unpaid=spent-paid;
+ $('summary').innerHTML=definitions.map(d=>'<div class="summary-card"><span>'+d.icon+' '+d.title+'</span><strong>'+money(total(d.id))+'</strong><small>المدفوع '+money(sectionItems(d.id).filter(x=>x.paid).reduce((a,x)=>a+x.total,0))+' · المتبقي '+money(sectionItems(d.id).filter(x=>!x.paid).reduce((a,x)=>a+x.total,0))+'</small></div>').join('')+
+ '<div class="summary-card"><span>إجمالي التكلفة الكلية</span><strong>'+money(spent)+'</strong><small>لكل الأقسام</small></div><div class="summary-card"><span>إجمالي ما تم دفعه</span><strong>'+money(paid)+'</strong><small>المبالغ المسددة</small></div><div class="summary-card"><span>إجمالي المتبقي</span><strong>'+money(unpaid)+'</strong><small>المبالغ غير المسددة</small></div>';
 }
 function drawChart(){
  const canvas=$('chart'),ctx=canvas.getContext('2d'),mode=$('chartMode').value,section=$('chartSection').value;
@@ -246,6 +339,74 @@ function openEditModal(item){
 }
 $('editModalCancel').onclick=()=>$('editModal').classList.remove('show');
 
+
+function getHistoryRecord(key){
+ if(key==='current'){
+  const snap=snapshotCurrent(state.currentPeriodKey||periodInfo().key);
+  snap.label=periodInfo().label;
+  return snap;
+ }
+ return state.history.find(x=>x.key===key)||null;
+}
+function drawHistoryChart(record){
+ const canvas=$('historyChart'),ctx=canvas.getContext('2d'),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.max(300,rect.width)*dpr;canvas.height=rect.height*dpr;ctx.scale(dpr,dpr);
+ const w=canvas.width/dpr,h=canvas.height/dpr;ctx.clearRect(0,0,w,h);
+ const dark=document.body.classList.contains('dark'),txt=dark?'#d8d1c7':'#766e64',grid=dark?'#41463f':'#e8e0d5';
+ const data=definitions.map((d,i)=>{const its=record.items.filter(x=>x.section===d.id);return {label:d.title,total:its.reduce((a,x)=>a+(Number(x.total)||0),0),paid:its.filter(x=>x.paid).reduce((a,x)=>a+(Number(x.total)||0),0),color:colors[i]};});
+ $('historyLegend').innerHTML='<span><i class="dot" style="background:#66836d"></i>مدفوع</span><span><i class="dot" style="background:#c28e73"></i>متبقي</span>';
+ const max=Math.max(1,...data.map(x=>x.total)),left=45,right=12,top=18,bottom=42,ch=h-top-bottom,cw=w-left-right;
+ ctx.font='11px Tahoma';ctx.textAlign='right';ctx.fillStyle=txt;ctx.strokeStyle=grid;
+ for(let i=0;i<=4;i++){const y=top+ch*i/4;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText((max*(1-i/4)).toLocaleString('en-US',{maximumFractionDigits:0}),left-6,y+4);}
+ const slot=cw/data.length,bw=Math.min(27,slot*.27);
+ data.forEach((d,i)=>{const x=left+i*slot+slot/2-bw,paidH=d.paid/max*(ch-8),unpaidH=(d.total-d.paid)/max*(ch-8);
+  ctx.fillStyle='#66836d';roundRect(ctx,x,top+ch-paidH,bw,paidH,5);ctx.fill();
+  ctx.fillStyle='#c28e73';roundRect(ctx,x+bw+4,top+ch-paidH-unpaidH,bw,unpaidH,5);ctx.fill();
+  ctx.fillStyle=txt;ctx.textAlign='center';ctx.fillText(d.label,x+bw+2,h-15);
+ });
+}
+function renderHistory(){
+ const options=[{key:'current',label:'الشهر الحالي · '+periodInfo().label},...state.history.slice().sort((a,b)=>b.key.localeCompare(a.key)).map(x=>({key:x.key,label:x.label}))];
+ if(!options.some(x=>x.key===selectedHistoryKey))selectedHistoryKey='current';
+ $('historyMonth').innerHTML=options.map(x=>'<option value="'+x.key+'" '+(x.key===selectedHistoryKey?'selected':'')+'>'+esc(x.label)+'</option>').join('');
+ $('monthStartDay').value=state.monthStartDay;
+ const rec=getHistoryRecord(selectedHistoryKey);
+ if(!rec){$('historyStats').innerHTML='<div class="history-empty">لا توجد بيانات لهذا الشهر.</div>';return;}
+ const paid=rec.items.filter(x=>x.paid).reduce((a,x)=>a+(Number(x.total)||0),0),spent=rec.items.reduce((a,x)=>a+(Number(x.total)||0),0),remaining=spent-paid;
+ $('historyStats').innerHTML='<div class="history-stat"><span>التكلفة الكلية</span><strong>'+money(spent)+'</strong></div><div class="history-stat"><span>إجمالي المدفوع</span><strong style="color:var(--green)">'+money(paid)+'</strong></div><div class="history-stat"><span>المتبقي للدفع</span><strong>'+money(remaining)+'</strong></div>';
+ $('historySections').innerHTML=definitions.map(d=>{const arr=rec.items.filter(x=>x.section===d.id),sum=arr.reduce((a,x)=>a+(Number(x.total)||0),0),p=arr.filter(x=>x.paid).reduce((a,x)=>a+(Number(x.total)||0),0),isOpen=(state.openHistorySections||[]).includes(d.id);return '<div class="history-category '+(isOpen?'open':'')+'" data-history-section="'+d.id+'"><div class="history-category-head" data-history-toggle="'+d.id+'"><div><strong>'+d.icon+' '+d.title+'</strong><div class="settings-note">'+arr.length+' عنصر · تم دفع '+money(p)+' · متبقي '+money(sum-p)+'</div></div><div style="display:flex;align-items:center;gap:12px"><strong>'+money(sum)+'</strong><span class="history-category-chevron">⌄</span></div></div><div class="history-category-body">'+(arr.length?arr.map(x=>'<div class="history-section-row" style="padding-right:12px"><div>'+esc(x.name)+'<small>'+(x.category?esc(x.category)+' · ':'')+(x.paid?'تم الدفع':'لم يتم الدفع')+'</small></div><strong style="'+(x.paid?'color:var(--green)':'')+'">'+money(x.total)+'</strong></div>').join(''):'<div class="settings-note" style="padding:8px 12px">لا توجد عناصر مسجلة في هذا القسم.</div>')+'</div></div>';}).join('');
+ drawHistoryChart(rec);
+}
+function switchPage(id){
+ state.activePage=id;save();
+ $('mainPage').classList.toggle('hidden',id!=='mainPage');
+ $('historyPage').classList.toggle('active',id==='historyPage');
+ document.querySelectorAll('.nav-tab').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+ if(id==='historyPage')renderHistory();else drawChart();
+}
+document.querySelectorAll('.nav-tab').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
+$('historySections').addEventListener('click',e=>{
+ const head=e.target.closest('[data-history-toggle]');
+ if(!head)return;
+ const id=head.dataset.historyToggle,card=head.closest('.history-category');
+ card.classList.toggle('open');
+ state.openHistorySections=state.openHistorySections||[];
+ if(card.classList.contains('open')){if(!state.openHistorySections.includes(id))state.openHistorySections.push(id);}
+ else state.openHistorySections=state.openHistorySections.filter(x=>x!==id);
+ save();
+});
+$('historyMonth').addEventListener('change',()=>{selectedHistoryKey=$('historyMonth').value;renderHistory();});
+$('saveMonthStart').addEventListener('click',()=>{
+ const day=Math.floor(Number($('monthStartDay').value));
+ if(!Number.isFinite(day)||day<1||day>31){toast('اختر يومًا من 1 إلى 31');return;}
+ state.monthStartDay=day;
+ // Apply the new monthly boundary immediately; archive the active cycle before switching.
+ const next=periodInfo(new Date(),day).key;
+ if(state.currentPeriodKey&&state.currentPeriodKey!==next&&!state.history.some(x=>x.key===state.currentPeriodKey))state.history.push(snapshotCurrent(state.currentPeriodKey));
+ if(state.currentPeriodKey!==next){state.items=state.items.filter(x=>x.section!=='other');state.items.forEach(x=>{x.paid=false;delete x.paidAt;});state.currentPeriodKey=next;}
+ save();selectedHistoryKey='current';render();renderHistory();toast('تم حفظ يوم بداية الشهر');
+});
+
 function render(){document.body.classList.toggle('dark',state.theme==='dark');$('themeBtn').textContent=state.theme==='dark'?'☀':'☾';renderSections();renderSummary();drawChart();}
 function showForm(id,editId=null){
  editingId=editId;
@@ -254,7 +415,7 @@ function showForm(id,editId=null){
  form.classList.add('open');
 }
 $('sections').addEventListener('click',e=>{
- const add=e.target.closest('[data-add]'),cancel=e.target.closest('[data-cancel]'),saveBtn=e.target.closest('[data-save]'),edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]'),collapse=e.target.closest('[data-collapse]');
+ const add=e.target.closest('[data-add]'),cancel=e.target.closest('[data-cancel]'),saveBtn=e.target.closest('[data-save]'),edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]'),collapse=e.target.closest('[data-collapse]'),payment=e.target.closest('[data-payment]');
  if(add){e.stopPropagation();const id=add.dataset.add;if(!state.expandedSections.includes(id)){state.expandedSections.push(id);save();}editingId=null;renderSections();renderSummary();drawChart();showForm(id);return;}
  if(collapse){
    const id=collapse.dataset.collapse,card=collapse.closest('.section');
@@ -263,6 +424,7 @@ $('sections').addEventListener('click',e=>{
    else if(!state.expandedSections.includes(id))state.expandedSections.push(id);
    save();return;
  }
+ if(payment){const item=state.items.find(x=>x.id===payment.dataset.payment);if(!item)return;openModal(item.paid?'إلغاء تسجيل الدفع':'تأكيد الدفع',item.paid?'هل تريد إلغاء تسجيل أن «'+item.name+'» تم دفعه؟':'هل تم دفع تكلفة «'+item.name+'»؟ سيتم تسجيل المبلغ كمدفوع.',()=>{item.paid=!item.paid;if(item.paid)item.paidAt=new Date().toISOString();else delete item.paidAt;save();render();toast(item.paid?'تم تسجيل الدفع':'تم إلغاء تسجيل الدفع');});return;}
  if(cancel){editingId=null;$(cancel.dataset.cancel+'-form').classList.remove('open');return;}
  if(saveBtn){saveItem(saveBtn.dataset.save);return;}
  if(edit){const item=state.items.find(x=>x.id===edit.dataset.edit);if(item)openEditModal(item);return;}
@@ -273,7 +435,7 @@ function saveItem(section){
  const name=get('name').value.trim(),cost=num(get('cost').value);
  if(!name){toast('من فضلك أدخل اسم العنصر');get('name').focus();return;}
  if(get('cost').value===''||Number(get('cost').value)<0){toast('من فضلك أدخل تكلفة صحيحة');get('cost').focus();return;}
- const d=definitions.find(x=>x.id===section),item={id:editingId||String(Date.now())+Math.random().toString(16).slice(2),section,name,cost,total:cost};
+ const d=definitions.find(x=>x.id===section),old=editingId?state.items.find(x=>x.id===editingId):null,item={id:editingId||String(Date.now())+Math.random().toString(16).slice(2),section,name,cost,total:cost,paid:old?.paid||false,paidAt:old?.paidAt};
  if(d.fields.includes('category'))item.category=get('category').value.trim();
  if(d.fields.includes('quantity'))item.quantity=get('quantity').value.trim();
  if(d.fields.includes('description'))item.description=get('description').value.trim();
@@ -285,7 +447,9 @@ $('themeBtn').onclick=()=>{state.theme=state.theme==='dark'?'light':'dark';save(
 $('chartMode').onchange=()=>{$('chartSection').style.display=$('chartMode').value==='categories'?'':'none';drawChart();};
 $('chartSection').onchange=drawChart;
 window.addEventListener('resize',drawChart);
+ensureCurrentPeriod();
 render();
+if(state.activePage==='historyPage')switchPage('historyPage');
 })();
 </script>
 </body>
